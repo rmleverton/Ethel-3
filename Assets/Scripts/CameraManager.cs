@@ -10,7 +10,7 @@ public class CameraManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        cameras = new GameObject[]{main_cam, alley_cam, street_cam, roof_cam, decontamination_cam};
+        cameras = new GameObject[]{main_cam, alley_cam, roof_cam, street_cam, decontamination_cam};
     }
 
     // Update is called once per frame

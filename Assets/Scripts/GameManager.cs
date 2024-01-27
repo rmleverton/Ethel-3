@@ -7,9 +7,15 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TimeManager time_manager;
     [SerializeField] private UIManager ui_manager;
     [SerializeField] private CameraManager camera_manager;
+    [SerializeField] private RythmGameManager rythm_game_manager;
+    [SerializeField] private PlayerController player_controller;    
 
+    [SerializeField] private GameObject[] door_array;
+    [SerializeField] private int end_of_day_time = 22;
     private int day_number = 0;
     private bool end_game = false;
+
+    private int num_cats = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -60,7 +66,7 @@ public class GameManager : MonoBehaviour
     public void Set_Time(int game_time_hours, int game_time_mminutes, string time_string){
         ui_manager.Set_Clock(time_string);
 
-        if(game_time_hours == 10){
+        if(game_time_hours == end_of_day_time){
             End_Day();
         }
     }
@@ -77,5 +83,32 @@ public class GameManager : MonoBehaviour
         else{
             camera_manager.Switch_Cam(0);
         }
+    }
+
+    public void Open_Door(int door_id){
+        //launch rythm game
+        rythm_game_manager.gameObject.SetActive(true);
+        rythm_game_manager.OnCreate(1, door_id);
+        time_manager.PauseClock();
+        door_array[door_id].GetComponent<Door>().Open();
+    }
+
+    public void Close_Door(bool success, int door_id){
+        rythm_game_manager.gameObject.SetActive(false);
+        if(success){
+            print("YAAAAAY");
+            num_cats ++;
+            print("Num Cats: " + num_cats);
+        }
+        else{
+            print("AWWWWWW");
+            print("Num Cats: " + num_cats);
+        }
+
+        time_manager.ResumeClock();
+        player_controller.Close_Door();
+        
+        door_array[door_id].GetComponent<Door>().Close();
+
     }
 }

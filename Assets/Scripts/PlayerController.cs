@@ -13,11 +13,14 @@ public class PlayerController : MonoBehaviour
     private float left_input_time = 0;
     private float right_input_time = 0;
     private float interact_input_time = 0;
+    private float door_input_time = 0;
     private string current_computer;
     private int current_computer_id;
     private string[] computer_array;
 
     private bool move_controls_enabled = true;
+    private bool door_enabled = false;
+    private bool interact_enabled = true;
     // Start is called before the first frame update
     void Start()
     {
@@ -38,9 +41,15 @@ public class PlayerController : MonoBehaviour
                 left_input_time = Time.time;
             }
         }
-        if (Input.GetKey(KeyCode.Space) && Time.time - interact_input_time >= input_delay){
+        if (Input.GetKeyDown(KeyCode.Space) && Time.time - interact_input_time >= input_delay && interact_enabled){
             Interact();
             interact_input_time = Time.time;
+        }
+        if(Input.GetKeyDown(KeyCode.D) && Time.time - door_input_time >= input_delay && door_enabled){
+            door_input_time = Time.time;
+            Open_Door();
+            door_enabled = false;
+            interact_enabled = false;
         }
     }
 
@@ -68,6 +77,7 @@ public class PlayerController : MonoBehaviour
     private void Interact(){
         print("Interaction");
         move_controls_enabled = !move_controls_enabled;
+        door_enabled = !door_enabled;
 
         bool focus = !move_controls_enabled;
         print("focus: " + focus);
@@ -83,5 +93,14 @@ public class PlayerController : MonoBehaviour
         else if (current_computer_id >= 4){
             current_computer_id = 0;
         }
+    }
+
+    private void Open_Door(){
+        game_manager.Open_Door(current_computer_id);
+    }
+
+    public void Close_Door(){
+        door_enabled = true;
+        interact_enabled = true;
     }
 }

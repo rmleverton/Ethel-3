@@ -14,6 +14,7 @@ public class TimeManager : MonoBehaviour
     private string clock_time;
     private int clock_hours;
     private int clock_minutes;
+    private bool pause_clock = false;
 
     [SerializeField] private GameManager game_manager;
     // Start is called before the first frame update
@@ -33,10 +34,14 @@ public class TimeManager : MonoBehaviour
     }
 
     private IEnumerator Start_Clock(float waitTime){
+        
+
         while(true)
         {
-            yield return new WaitForSeconds(waitTime);
-            Clock_Tick();
+            yield return new WaitUntil(() => !pause_clock);
+                yield return new WaitForSeconds(waitTime);
+                Clock_Tick();
+            
 
         }
     }
@@ -75,6 +80,17 @@ public class TimeManager : MonoBehaviour
     private void Reset_Clock(){
         clock_hours = 7;
         clock_minutes = 0;
+    }
+
+    public void PauseClock()
+    {
+        pause_clock = true;
+    }
+
+// Call this method to resume the clock coroutine
+    public void ResumeClock()
+    {
+        pause_clock = false;
     }
 
 }

@@ -16,5 +16,9 @@ public class PawScript : MonoBehaviour
     {
         transform.position = transform.position + new Vector3(0, speed * Time.deltaTime, 0);
         // print(speed * Time.deltaTime);
+
+        if(transform.position.y > 1300){
+            Destroy(gameObject);
+        }
     }
 }
