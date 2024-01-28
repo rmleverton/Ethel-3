@@ -18,19 +18,21 @@ public class PlayerController : MonoBehaviour
     private int current_computer_id;
     private string[] computer_array;
 
-    private bool move_controls_enabled = true;
+    private bool move_controls_enabled = false;
     private bool door_enabled = false;
-    private bool interact_enabled = true;
+    private bool interact_enabled = false;
     // Start is called before the first frame update
     void Start()
     {
-        computer_array = new string[]{"Front", "Right", "Back", "Left"};
+
+        computer_array = new string[]{"Front", "Right", "Back"};//, "Left"};
         current_computer_id = 0;
     }
 
     // Update is called once per frame
     void Update()
     {
+        // print("door enabled: " + door_enabled);
         if(move_controls_enabled){
             if(Input.GetAxis("Horizontal")> 0 && Time.time - right_input_time >= input_delay){
                 Move_Right();
@@ -41,15 +43,24 @@ public class PlayerController : MonoBehaviour
                 left_input_time = Time.time;
             }
         }
+        if (Input.GetKeyDown(KeyCode.Space)&& Time.time - interact_input_time >= input_delay){
+            print("interacting space: " + interact_enabled);
+        }
         if (Input.GetKeyDown(KeyCode.Space) && Time.time - interact_input_time >= input_delay && interact_enabled){
+            print("interacting");
             Interact();
             interact_input_time = Time.time;
         }
+        if (Input.GetKeyDown(KeyCode.D)&& Time.time - door_input_time >= input_delay){
+            print("interacting d: " + door_enabled);
+        }
         if(Input.GetKeyDown(KeyCode.D) && Time.time - door_input_time >= input_delay && door_enabled){
             door_input_time = Time.time;
-            Open_Door();
+            print("opening door");
+            
             door_enabled = false;
             interact_enabled = false;
+            Open_Door();
         }
     }
 
@@ -88,9 +99,9 @@ public class PlayerController : MonoBehaviour
     private void Switch_Computer(int dir){
         current_computer_id = current_computer_id + dir;
         if(current_computer_id <= -1){
-            current_computer_id = 3;
+            current_computer_id = 2;
         }
-        else if (current_computer_id >= 4){
+        else if (current_computer_id >= 3){
             current_computer_id = 0;
         }
     }
@@ -100,7 +111,14 @@ public class PlayerController : MonoBehaviour
     }
 
     public void Close_Door(){
+        print("close door");
         door_enabled = true;
         interact_enabled = true;
+    }
+
+    public void setup(){
+        
+        interact_enabled = true;
+        move_controls_enabled = true;
     }
 }

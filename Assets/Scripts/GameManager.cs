@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Video;
 
 public class GameManager : MonoBehaviour
 {
@@ -8,48 +9,108 @@ public class GameManager : MonoBehaviour
     [SerializeField] private UIManager ui_manager;
     [SerializeField] private CameraManager camera_manager;
     [SerializeField] private RythmGameManager rythm_game_manager;
-    [SerializeField] private PlayerController player_controller;    
+    [SerializeField] private PlayerController player_controller;
+    [SerializeField] private CatManager cat_manager;  
+    [SerializeField] private MusicManager music_manager;    
 
     [SerializeField] private GameObject[] door_array;
     [SerializeField] private int end_of_day_time = 22;
     private int day_number = 0;
     private bool end_game = false;
+    public int cat_place;
 
     private int num_cats = 0;
+
+    private bool start = true;
+
+    private VideoPlayer videoPlayer;
+    public GameObject videoobj;
 
     // Start is called before the first frame update
     void Start()
     {
-        New_Day();
+
+        videoPlayer = GetComponent<VideoPlayer>();
+        
     }
 
     // Update is called once per frame
     void Update()
     {
+        if(start){
+            if(Input.anyKey){
+            Intro();
+            }
+        }
         
+    }
+
+    void Intro(){
+        ui_manager.intro_ident_panel.SetActive(false);
+
+        videoPlayer.renderMode = VideoRenderMode.MaterialOverride;
+        videoPlayer.targetMaterialRenderer = videoobj.GetComponent<Renderer>();
+        videoPlayer.targetMaterialProperty = "_MainTex";
+
+        videoPlayer.loopPointReached += OnVideoFinished;
+
+        videoPlayer.Play();
+        
+    }
+    void OnVideoFinished(VideoPlayer vp)
+    {
+        Debug.Log("Video finished playing!");
+
+        // Call your method or perform any action here
+        Setup_Day();
+
+        // Hide the video by disabling the VideoPlayer component or setting the GameObject inactive
+        videoPlayer.enabled = false;
+        videoobj.SetActive(false);
+        // Or: gameObject.SetActive(false);
+        player_controller.setup();
     }
 
     public void End_Day(){
         time_manager.End_Day();
+        List<Cat> cats = cat_manager.Get_Cats();
+        Cat last_cat = cats[0];
+        cat_manager.Remove_Cat(last_cat);
+        Destroy(last_cat);
 
-        if(day_number == 9){
-            End_Game();
-        }
+
+        
 
         if(!end_game){
             
             print("End Day");
-            New_Day();
+            Setup_Day();
             
         }
     }
-    private void New_Day(){
+
+    private void Setup_Day(){
         day_number++;
         Set_Day_Number(day_number);
 
-        time_manager.New_Day();
+        
         ui_manager.New_Day(day_number);
+        
 
+        
+    }
+    public void Play_Marge(){
+        music_manager.PlayMargeCallDay(day_number);
+    }
+    public void New_Day(){
+        if(day_number == 9){
+            End_Game();
+            return;
+        }
+        ui_manager.Get_Marge_Call_Panel();
+
+        cat_manager.Spawn_Cat();
+        time_manager.New_Day();
     }
 
 
@@ -63,8 +124,9 @@ public class GameManager : MonoBehaviour
         return day_number;
     }
 
-    public void Set_Time(int game_time_hours, int game_time_mminutes, string time_string){
+    public void Set_Time(int game_time_hours, int game_time_minutes, string time_string){
         ui_manager.Set_Clock(time_string);
+        cat_manager.Move_Cats_Random();
 
         if(game_time_hours == end_of_day_time){
             End_Day();
@@ -86,19 +148,31 @@ public class GameManager : MonoBehaviour
     }
 
     public void Open_Door(int door_id){
-        //launch rythm game
-        rythm_game_manager.gameObject.SetActive(true);
-        rythm_game_manager.OnCreate(1, door_id);
-        time_manager.PauseClock();
-        door_array[door_id].GetComponent<Door>().Open();
+        Debug.Log("Cat Place: " + (int)(door_id+1));
+
+        if(cat_place == door_id + 1){
+            //launch rythm game
+            time_manager.PauseClock();
+            rythm_game_manager.gameObject.SetActive(true);
+            Cat cat = cat_manager.Get_Cat(0);
+            rythm_game_manager.OnCreate(cat, door_id);
+
+            
+            door_array[door_id].GetComponent<Door>().Open();
+        }
+        else{
+            player_controller.Close_Door();
+        }
     }
 
-    public void Close_Door(bool success, int door_id){
+    public void Close_Door(bool success, int door_id, Cat cat){
         rythm_game_manager.gameObject.SetActive(false);
         if(success){
             print("YAAAAAY");
             num_cats ++;
             print("Num Cats: " + num_cats);
+            cat_manager.Remove_Cat(cat);
+            cat_manager.Spawn_Cat();
         }
         else{
             print("AWWWWWW");
@@ -110,5 +184,12 @@ public class GameManager : MonoBehaviour
         
         door_array[door_id].GetComponent<Door>().Close();
 
+
+        
+
+    }
+
+    public void Move_Rythm_Cat(Cat cat, int dir){
+        cat_manager.Move_Cat(cat, dir);
     }
 }

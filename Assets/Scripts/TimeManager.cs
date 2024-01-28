@@ -7,8 +7,8 @@ public class TimeManager : MonoBehaviour
 
     private float day_start_time;
     private int clock_tick_counter;
-    [SerializeField] private int day_length = 10;
-    private int day_counter; 
+    // [SerializeField] private int day_length = 10;
+    // private int day_counter; 
 
     private IEnumerator day_cycle;
     private string clock_time;
@@ -22,7 +22,7 @@ public class TimeManager : MonoBehaviour
     {
 
 
-        day_counter = 1;
+        // day_counter = 1;
 
 
     }

@@ -9,6 +9,8 @@ public class RythmGameManager : MonoBehaviour
 
     [SerializeField] private GameManager game_manager;
 
+    [SerializeField] private GameObject success_screen;
+
     [SerializeField] private GameObject target_p, target_s, pawprints_p, pawprints_s, cur_p, cur_s;
     private float success_meter = 0;
     private float success_target = 10;
@@ -26,20 +28,25 @@ public class RythmGameManager : MonoBehaviour
 
     private int cat_pos;
     private int door_number;
+
+    private Cat _cat;
     // Start is called before the first frame update
     void OnEnable()
     {
         
     }
 
-    public void OnCreate(int catposition, int door_id){
+    public void OnCreate(Cat cat, int door_id){
         p_array = new List<GameObject>();
         s_array = new List<GameObject>();
+
+        _cat = cat;
 
         success_meter = 0;
         fail_num = 0;
 
-        cat_pos = catposition;
+        int[] cat_loc = cat.Get_Location();
+        cat_pos = cat_loc[1];
         running = true;
 
         door_number = door_id;
@@ -133,14 +140,19 @@ public class RythmGameManager : MonoBehaviour
         cat_pos --;
         print("Cat Pos: " + cat_pos);
 
+        game_manager.Move_Rythm_Cat(_cat, -1);
+
         if(cat_pos == 0){
             
             //fail screen
             End_Rythm_Game(false);
+            return;
         }
        
         fail_num = 0;
         success_meter = 0;
+
+        
 
     }
 
@@ -151,15 +163,34 @@ public class RythmGameManager : MonoBehaviour
         if(cat_pos == 4){
             //success screen
             End_Rythm_Game(true);
+            return;
         }
 
         fail_num = 0;
         success_meter = 0;
 
+        game_manager.Move_Rythm_Cat(_cat, 1 );
+
     }
 
     private void End_Rythm_Game(bool success){
-        game_manager.Close_Door(success, door_number);
+        
         running = false;
+
+        success_screen.SetActive(true);
+
+         // Start a coroutine to introduce a delay before calling Close_Door
+        StartCoroutine(DelayBeforeCloseDoor(success));
+    }
+
+    // Coroutine to introduce a delay before calling Close_Door
+    private IEnumerator DelayBeforeCloseDoor(bool success)
+    {
+        // Wait for 5 seconds (adjust the time as needed)
+        yield return new WaitForSeconds(5f);
+
+        // After the delay, call the Close_Door method
+        game_manager.Close_Door(success, door_number, _cat);
+        success_screen.SetActive(false);
     }
 }
